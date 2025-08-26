@@ -1,24 +1,22 @@
 apiVersion: meta.pkg.crossplane.io/v1
 kind: Configuration
 metadata:
-  name: your-configuration
+  name: configuration-azure-workload-identity
   annotations:
-    # Set the annotations defining the maintainer, source, license, and description of your Configuration
-    meta.crossplane.io/maintainer: You <myself@me.io>
-    meta.crossplane.io/source: github.com/your-organization/your-repo
-    # Set the license of your Configuration
-    meta.crossplane.io/license: Apache-2.0
-    meta.crossplane.io/description: |
-      This is where you can describe your configuration.
-    meta.crossplane.io/readme: |
-      This is where you can add a readme for your configuration.
+    meta.crossplane.io/maintainer: Livewyer <bowen@livewyer.com>
+    meta.crossplane.io/source: https://github.com/livewyer-ops/crossplane-configuration-azure-workload-identity
+    meta.crossplane.io/license: MIT License
+    meta.crossplane.io/description: Crossplane Composite Resource Definitions (XRDs) package for creating Workload Identity in Azure.
+    meta.crossplane.io/readme: ""
 spec:
-  # (Optional) Set the minimum version of Crossplane that this Configuration is compatible with
   crossplane:
-    version: ">=v1.14.1-0"
-  # Add your dependencies here
+    version: ">=v2.0.2"
   dependsOn:
-    - provider: xpkg.upbound.io/crossplane-contrib/provider-kubernetes
-      version: "v0.12.1"
-    - function: xpkg.upbound.io/crossplane-contrib/function-patch-and-transform
-      version: "v0.3.0"
+    - provider: xpkg.upbound.io/upbound/provider-family-azure
+      version: ">=v2"
+    - provider: xpkg.upbound.io/upbound/provider-kubernetes
+      version: ">=v1"
+    - function: xpkg.upbound.io/upbound/function-go-templating
+      version: ">=v0.10.0"
+    - function: xpkg.upbound.io/upbound/function-auto-ready
+      version: ">=v0.5.0"
