@@ -1,0 +1,26 @@
+apiVersion: apiextensions.crossplane.io/v2
+kind: CompositeResourceDefinition
+metadata:
+  name: workloadidentities.azure.livewyer.io
+spec:
+  scope: Namespaced
+  group: azure.livewyer.io
+  names:
+    kind: WorkloadIdentity
+    plural: workloadidentities
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+            status:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+          required:
+            - spec
