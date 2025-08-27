@@ -32,6 +32,7 @@ spec:
                     - resourceGroupName
                     - oidcIssuerURL
                     - roleAssignments
+                    - serviceAccountName
                   description: "ForProvider specifies the parameters for configuring the Azure workload identity resources"
                   properties:
                     location:
@@ -65,6 +66,9 @@ spec:
                             description: "List of data actions to include in the custom role (only used when createCustomRole is true)"
                             items:
                               type: string
+                    serviceAccountName:
+                      type: string
+                      description: "Kubernetes Service Account name to create"
                     tags:
                       type: object
                       description: "Azure resource tags to apply to the created resources"

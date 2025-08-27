@@ -17,6 +17,83 @@ spec:
         source: Inline
         inline:
           template: |
+            {{ $id := .observed.composite.resource.metadata.name -}}
+            {{ $ns := default "default" $.observed.composite.resource.metadata.namespace }}
+            {{ $spec := .observed.composite.resource.spec -}}
+
+            ---
+
+            apiVersion: managedidentity.azure.m.upbound.io/v1beta1
+            kind: UserAssignedIdentity
+            metadata:
+              name: {{ $id }}
+              namespace: {{ $ns }}
+              annotations:
+                {{ setResourceNameAnnotation (printf "userassignedidentity.managedidentity.azure.livewyer.io/%s" $id) }}
+              labels:
+                managedidentity.azure.livewyer.io/userassignedidentity: {{ $id }}
+            spec:
+              {{- if $spec.providerConfigRef }}
+              providerConfigRef: {{ toJson $spec.providerConfigRef }}
+              {{- end }}
+              {{- if $spec.deletionPolicy }}
+              deletionPolicy: {{ $spec.deletionPolicy }}
+              {{- end }}
+              {{- if $spec.managementPolicies }}
+              managementPolicies: {{ toJson $spec.managementPolicies }}
+              {{- end }}
+              {{- if $spec.publishConnectionDetailsTo }}
+              publishConnectionDetailsTo: {{ toJson $spec.publishConnectionDetailsTo }}
+              {{- end }}
+              {{- if $spec.writeConnectionSecretsToNamespace }}
+              writeConnectionSecretsToNamespace: {{ $spec.writeConnectionSecretsToNamespace }}
+              {{- end }}
+              forProvider:
+                name: {{ $id }}
+                location: {{ $spec.forProvider.location }}
+                resourceGroupName: {{ $spec.forProvider.resourceGroupName }}
+                {{- if $spec.forProvider.tags }}
+                tags: {{ toJson $spec.forProvider.tags }}
+                {{- end }}
+
+            ---
+
+            apiVersion: managedidentity.azure.m.upbound.io/v1beta1
+            kind: FederatedIdentityCredential
+            metadata:
+              name: {{ $id }}
+              namespace: {{ $ns }}
+              annotations:
+                {{ setResourceNameAnnotation (printf "federatedidentitycredential.managedidentity.azure.livewyer.io/%s" $id) }}
+              labels:
+                managedidentity.azure.livewyer.io/federatedidentitycredential: {{ $id }}
+            spec:
+              {{- if $spec.providerConfigRef }}
+              providerConfigRef: {{ toJson $spec.providerConfigRef }}
+              {{- end }}
+              {{- if $spec.deletionPolicy }}
+              deletionPolicy: {{ $spec.deletionPolicy }}
+              {{- end }}
+              {{- if $spec.managementPolicies }}
+              managementPolicies: {{ toJson $spec.managementPolicies }}
+              {{- end }}
+              {{- if $spec.publishConnectionDetailsTo }}
+              publishConnectionDetailsTo: {{ toJson $spec.publishConnectionDetailsTo }}
+              {{- end }}
+              {{- if $spec.writeConnectionSecretsToNamespace }}
+              writeConnectionSecretsToNamespace: {{ $spec.writeConnectionSecretsToNamespace }}
+              {{- end }}
+              forProvider:
+                resourceGroupName: {{ $spec.forProvider.resourceGroupName }}
+                audience:
+                  - api://AzureADTokenExchange
+                issuer: {{ $spec.forProvider.oidcIssuerURL }}
+                parentIdRef:
+                  name: {{ $id }}
+                  namespace: {{ $ns }}
+                subject: {{ printf "system:serviceaccount:%s:%s" $ns $id }}
+
+            ---
 
     - step: automatically-detect-ready-composed-resources
       functionRef:
