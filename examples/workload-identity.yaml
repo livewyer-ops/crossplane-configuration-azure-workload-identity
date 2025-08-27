@@ -12,16 +12,25 @@ spec:
   forProvider:
     location: eastus
     resourceGroupName: example-group
+    serviceAccountName: simple-example
     oidcIssuerURL: https://eastus.oic.prod-aks.azure.com/00000000-0000-0000-0000-000000000000/11111111-1111-1111-1111-111111111111/
     roleAssignments:
       - roleDefinitionName: Reader
         scope: /subscriptions/xxxx-xxxx-xxxx
-      - roleDefinitionName: CustomRole
+      - roleDefinitionName: Owner
+        scope: /subscriptions/yyyy-yyyy-yyyy
+      - roleDefinitionName: CustomRole1
         scope: /subscriptions/xxxx-xxxx-xxxx
         createCustomRole: true
         customRoleDataActions:
           - Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read
           - Microsoft.Network/loadBalancers/read
+      - roleDefinitionName: CustomRole2
+        scope: /subscriptions/yyyy-yyyy-yyyy
+        createCustomRole: true
+        customRoleDataActions:
+          - Microsoft.Network/applicationGateways/read
+          - Microsoft.Network/networkSecurityGroups/read
     tags:
       name: simple-example
       env: test

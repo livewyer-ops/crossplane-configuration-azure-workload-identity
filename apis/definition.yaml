@@ -57,7 +57,7 @@ spec:
                             type: string
                             description: "Azure resource ID defining the scope of the role assignment (e.g., subscription, resource group, or specific resource)"
                           createCustomRole:
-                            type: bool
+                            type: boolean
                             nullable: true
                             description: "If true, creates a custom role with the specified data actions instead of using a built-in role"
                           customRoleDataActions:

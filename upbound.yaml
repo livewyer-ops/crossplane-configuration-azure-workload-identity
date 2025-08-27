@@ -1,20 +1,28 @@
-apiVersion: meta.dev.upbound.io/v1alpha1
+apiVersion: meta.dev.upbound.io/v2alpha1
 kind: Project
 metadata:
   name: configuration-azure-workload-identity
 spec:
   dependsOn:
-    - provider: xpkg.upbound.io/upbound/provider-family-azure
-      version: ">=v2"
-    - provider: xpkg.upbound.io/upbound/provider-kubernetes
-      version: ">=v1"
-    - function: xpkg.upbound.io/upbound/function-go-templating
-      version: ">=v0.10.0"
-    - function: xpkg.upbound.io/upbound/function-auto-ready
-      version: ">=v0.5.0"
-  description: Crossplane Composite Resource Definitions (XRDs) package for creating Workload Identity in Azure.
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Provider
+    package: xpkg.upbound.io/upbound/provider-family-azure
+    version: '>=v2'
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Provider
+    package: xpkg.upbound.io/upbound/provider-kubernetes
+    version: '>=v1'
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Function
+    package: xpkg.upbound.io/upbound/function-go-templating
+    version: '>=v0.10.0'
+  - apiVersion: pkg.crossplane.io/v1
+    kind: Function
+    package: xpkg.upbound.io/upbound/function-auto-ready
+    version: '>=v0.5.0'
+  description: Crossplane Composite Resource Definitions (XRDs) package for creating
+    Workload Identity in Azure.
   license: MIT License
   maintainer: Livewyer <bowen@livewyer.com>
   repository: xpkg.upbound.io/livewyer-ops/crossplane-configuration-azure-workload-identity
   source: https://github.com/livewyer-ops/crossplane-configuration-azure-workload-identity
-  readme: ""

@@ -1,7 +1,7 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: workloadidentity.azure.livewyer.io
+  name: workloadidentities.azure.livewyer.io
 spec:
   compositeTypeRef:
     apiVersion: azure.livewyer.io/v1alpha1
