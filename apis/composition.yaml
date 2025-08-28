@@ -107,6 +107,135 @@ spec:
                 subject: {{ printf "system:serviceaccount:%s:%s" $ns $id }}
 
             ---
+            {{- range $roleAssign := $spec.forProvider.roleAssignments }}
+            {{- $roleId := printf "%s_%s_%s" $id (replace "/subscriptions/" "" $roleAssign.scope) $roleAssign.roleDefinitionName }}
+            {{- if $roleAssign.permissions }}
+            ---
+
+            apiVersion: authorization.azure.m.upbound.io/v1beta1
+            kind: RoleDefinition
+            metadata:
+              name: {{ $roleId }}
+              namespace: {{ $ns }}
+              annotations:
+                {{ setResourceNameAnnotation (printf "roledefinition.authorization.azure.livewyer.io/%s" $roleId) }}
+              labels:
+                azure.livewyer.io/workloadidentity: {{ $id }}
+                authorization.azure.livewyer.io/roledefinition: {{ $roleId }}
+                azure.livewyer.io/subscription: {{ replace "/subscriptions/" "" $roleAssign.scope }}
+            spec:
+              {{- if $spec.providerConfigRef }}
+              providerConfigRef: {{ toJson $spec.providerConfigRef }}
+              {{- end }}
+              {{- if $spec.deletionPolicy }}
+              deletionPolicy: {{ $spec.deletionPolicy }}
+              {{- end }}
+              {{- if $spec.managementPolicies }}
+              managementPolicies: {{ toJson $spec.managementPolicies }}
+              {{- end }}
+              {{- if $spec.publishConnectionDetailsTo }}
+              publishConnectionDetailsTo: {{ toJson $spec.publishConnectionDetailsTo }}
+              {{- end }}
+              {{- if $spec.writeConnectionSecretsToNamespace }}
+              writeConnectionSecretsToNamespace: {{ $spec.writeConnectionSecretsToNamespace }}
+              {{- end }}
+              forProvider:
+                name: {{ $roleAssign.roleDefinitionName }}
+                {{- if $roleAssign.scopeRef }}
+                scopeRef: {{ toJson $roleAssign.scopeRef }}
+                {{- else }}
+                scope: {{ $roleAssign.scope }}
+                {{- end }}
+                {{- if $roleAssign.assignableScopes }}
+                assignableScopes: {{ $roleAssign.assignableScopes }}
+                {{- end }}
+                {{- if $roleAssign.assignableScopesRefs }}
+                assignableScopesRefs: {{ toJson $roleAssign.assignableScopesRefs }}
+                {{- end }}
+                {{- if $roleAssign.description }}
+                description: {{ $roleAssign.description }}
+                {{- end }}
+                {{- if $roleAssign.roleDefinitionId }}
+                roleDefinitionId: {{ $roleAssign.roleDefinitionId }}
+                {{- end }}
+                permissions: {{ toJson $roleAssign.permissions }}
+
+            ---
+            {{- end }}
+            ---
+
+            apiVersion: authorization.azure.m.upbound.io/v1beta1
+            kind: RoleAssignment
+            metadata:
+              name: {{ $roleId }}
+              namespace: {{ $ns }}
+              annotations:
+                {{ setResourceNameAnnotation (printf "roleassignment.authorization.azure.livewyer.io/%s" $roleId) }}
+              labels:
+                azure.livewyer.io/workloadidentity: {{ $id }}
+                authorization.azure.livewyer.io/roleassignment: {{ $roleId }}
+                azure.livewyer.io/subscription: {{ replace "/subscriptions/" "" $roleAssign.scope }}
+            spec:
+              {{- if $spec.providerConfigRef }}
+              providerConfigRef: {{ toJson $spec.providerConfigRef }}
+              {{- end }}
+              {{- if $spec.deletionPolicy }}
+              deletionPolicy: {{ $spec.deletionPolicy }}
+              {{- end }}
+              {{- if $spec.managementPolicies }}
+              managementPolicies: {{ toJson $spec.managementPolicies }}
+              {{- end }}
+              {{- if $spec.publishConnectionDetailsTo }}
+              publishConnectionDetailsTo: {{ toJson $spec.publishConnectionDetailsTo }}
+              {{- end }}
+              {{- if $spec.writeConnectionSecretsToNamespace }}
+              writeConnectionSecretsToNamespace: {{ $spec.writeConnectionSecretsToNamespace }}
+              {{- end }}
+              forProvider:
+                name: {{ $roleAssign.roleDefinitionName }}
+                scope: {{ $roleAssign.scope }}
+                principalId: {{ dig "status" "atProvider" "principalId" "" (getComposedResource . (printf "userassignedidentity.managedidentity.azure.livewyer.io/%s" $id)) }}
+                {{- if $roleAssign.description }}
+                description: {{ $roleAssign.description }}
+                {{- end }}
+                {{- if $roleAssign.principalType }}
+                principalType: {{ $roleAssign.principalType }}
+                {{- end }}
+                {{- if $roleAssign.condition }}
+                condition: {{ $roleAssign.condition }}
+                {{- end }}
+                {{- if $roleAssign.conditionVersion }}
+                conditionVersion: {{ $roleAssign.conditionVersion }}
+                {{- end }}
+                {{- if $roleAssign.permissions }}
+                roleDefinitionIdRef:
+                  name: {{ $roleId }}
+                  namespace: {{ $ns }}
+                {{- else }}
+                roleDefinitionName: {{ $roleAssign.roleDefinitionName }}
+                {{- end }}
+
+            ---
+            {{- end }}
+            {{- if $spec.forProvider.serviceAccountName }}
+            ---
+
+            apiVersion: v1
+            kind: ServiceAccount
+            metadata:
+              name: {{ $spec.forProvider.serviceAccountName }}
+              namespace: {{ $ns }}
+              annotations:
+                {{ setResourceNameAnnotation (printf "serviceaccount.workloadidentity.azure.livewyer.io/%s" $spec.forProvider.serviceAccountName) }}
+                azure.workload.identity/client-id: {{ default (toString "''") (getComposedResource . (printf "userassignedidentity.managedidentity.azure.livewyer.io/%s" $id)).status.atProvider.clientId }}
+                azure.workload.identity/tenant-id: {{ default (toString "''") (getComposedResource . (printf "userassignedidentity.managedidentity.azure.livewyer.io/%s" $id)).status.atProvider.tenantId }}
+                azure.workload.identity/service-account-token-expiration: {{ default (toString "'86400'") $spec.forProvider.serviceAccountTokenExpiration }}
+              labels:
+                azure.livewyer.io/workloadidentity: {{ $id }}
+
+            ---
+            {{- end }}
+            ---
 
             apiVersion: {{ .observed.composite.resource.apiVersion }}
             kind: {{ .observed.composite.resource.kind }}
