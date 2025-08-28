@@ -32,7 +32,6 @@ spec:
                     - resourceGroupName
                     - oidcIssuerURL
                     - roleAssignments
-                    - serviceAccountName
                   description: "ForProvider specifies the parameters for configuring the Azure workload identity resources"
                   properties:
                     location:
@@ -50,25 +49,78 @@ spec:
                       items:
                         type: object
                         properties:
+                          description:
+                            type: string
                           roleDefinitionName:
                             type: string
                             description: "Name of the Azure built-in role or custom role to assign (e.g., Contributor, Reader)"
                           scope:
                             type: string
                             description: "Azure resource ID defining the scope of the role assignment (e.g., subscription, resource group, or specific resource)"
-                          createCustomRole:
-                            type: boolean
-                            nullable: true
-                            description: "If true, creates a custom role with the specified data actions instead of using a built-in role"
-                          customRoleDataActions:
-                            type: array
-                            nullable: true
+                          scopeRef:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              namespace:
+                                type: string
+                              policy:
+                                type: object
+                                properties:
+                                  resolution:
+                                    type: string
+                                  resolve:
+                                    type: string
+                          assignableScopes:
+                            type: string
+                          assignableScopesRefs:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              namespace:
+                                type: string
+                              policy:
+                                type: object
+                                properties:
+                                  resolution:
+                                    type: string
+                                  resolve:
+                                    type: string
+                          roleDefinitionId:
+                            type: string
+                          condition:
+                            type: string
+                          conditionVersion:
+                            type: string
+                          principalType:
+                            type: string
+                          permissions:
+                            type: object
                             description: "List of data actions to include in the custom role (only used when createCustomRole is true)"
-                            items:
-                              type: string
+                            properties:
+                              actions:
+                                type: array
+                                items:
+                                  type: string
+                              dataActions:
+                                type: array
+                                items:
+                                  type: string
+                              noActions:
+                                type: array
+                                items:
+                                  type: string
+                              noDataActions:
+                                type: array
+                                items:
+                                  type: string
                     serviceAccountName:
                       type: string
                       description: "Kubernetes Service Account name to create"
+                    serviceAccountTokenExpiration:
+                      type: integer
+                      minimum: 0
                     tags:
                       type: object
                       description: "Azure resource tags to apply to the created resources"
