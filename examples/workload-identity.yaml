@@ -2,7 +2,7 @@ apiVersion: azure.livewyer.io/v1alpha1
 kind: WorkloadIdentity
 metadata:
   name: simple-example
-  namespace: default
+  namespace: test
   annotations:
     crossplane.io/composition-resource-name: workloadidentity.azure.livewyer.io/simple-example
 spec:
@@ -21,16 +21,16 @@ spec:
         scope: /subscriptions/yyyy-yyyy-yyyy
       - roleDefinitionName: CustomRole1
         scope: /subscriptions/xxxx-xxxx-xxxx
-        createCustomRole: true
-        customRoleDataActions:
-          - Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read
-          - Microsoft.Network/loadBalancers/read
+        permissions:
+          dataActions:
+            - Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read
+            - Microsoft.Network/loadBalancers/read
       - roleDefinitionName: CustomRole2
         scope: /subscriptions/yyyy-yyyy-yyyy
-        createCustomRole: true
-        customRoleDataActions:
-          - Microsoft.Network/applicationGateways/read
-          - Microsoft.Network/networkSecurityGroups/read
+        permissions:
+          actions:
+            - Microsoft.Network/applicationGateways/read
+            - Microsoft.Network/networkSecurityGroups/read
     tags:
       name: simple-example
       env: test
