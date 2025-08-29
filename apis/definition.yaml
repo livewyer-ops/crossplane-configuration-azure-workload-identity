@@ -51,8 +51,7 @@ spec:
                         properties:
                           description:
                             type: string
-                            description: "Optional description for this
- role assignment"
+                            description: "Optional description for this role assignment"
                           roleDefinitionName:
                             type: string
                             description: "Name of the Azure built-in role or custom role to assign (e.g., Contributor, Reader)"
@@ -130,12 +129,12 @@ spec:
                                   description: "List of allowed data operations"
                                   items:
                                     type: string
-                                noActions:
+                                notActions:
                                   type: array
                                   description: "List of denied management operations"
                                   items:
                                     type: string
-                                noDataActions:
+                                notDataActions:
                                   type: array
                                   description: "List of denied data operations"
                                   items:
@@ -167,5 +166,35 @@ spec:
                     - name
             status:
               type: object
-              description: "WorkloadIdentityStatus defines the observed state of WorkloadIdentity"
-              x-kubernetes-preserve-unknown-fields: true
+              properties:
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      lastTransitionTime:
+                        type: string
+                        format: date-time
+                      message:
+                        type: string
+                      reason:
+                        type: string
+                      status:
+                        type: string
+                      type:
+                        type: string
+                    required:
+                      - lastTransitionTime
+                      - reason
+                      - status
+                      - type
+                connectionDetails:
+                  type: object
+                  properties:
+                    lastPublishedTime:
+                      type: string
+                      format: date-time
+                atProvider:
+                  type: object
+                  description: "Porvider state."
+                  x-kubernetes-preserve-unknown-fields: true

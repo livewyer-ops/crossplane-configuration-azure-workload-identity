@@ -22,17 +22,6 @@ spec:
             {{ $spec := .observed.composite.resource.spec -}}
 
             ---
-            {{- if ne $ns "default" }}
-
-            apiVersion: v1
-            kind: Namespace
-            metadata:
-              name: {{ $ns }}
-              annotations:
-                {{ setResourceNameAnnotation (printf "namespace.workloadidentity.azure.livewyer.io/%s" $id) }}
-
-            {{- end }}
-            ---
 
             apiVersion: managedidentity.azure.m.upbound.io/v1beta1
             kind: UserAssignedIdentity
@@ -40,10 +29,10 @@ spec:
               name: {{ $id }}
               namespace: {{ $ns }}
               annotations:
-                {{ setResourceNameAnnotation (printf "userassignedidentity.managedidentity.azure.livewyer.io/%s" $id) }}
+                {{ setResourceNameAnnotation (printf "userassignedidentity.workloadidentity.azure.livewyer.io/%s" $id) }}
               labels:
                 azure.livewyer.io/workloadidentity: {{ $id }}
-                managedidentity.azure.livewyer.io/userassignedidentity: {{ $id }}
+                workloadidentity.azure.livewyer.io/userassignedidentity: {{ $id }}
             spec:
               {{- if $spec.providerConfigRef }}
               providerConfigRef: {{ toJson $spec.providerConfigRef }}
@@ -76,10 +65,10 @@ spec:
               name: {{ $id }}
               namespace: {{ $ns }}
               annotations:
-                {{ setResourceNameAnnotation (printf "federatedidentitycredential.managedidentity.azure.livewyer.io/%s" $id) }}
+                {{ setResourceNameAnnotation (printf "federatedidentitycredential.workloadidentity.azure.livewyer.io/%s" $id) }}
               labels:
                 azure.livewyer.io/workloadidentity: {{ $id }}
-                managedidentity.azure.livewyer.io/federatedidentitycredential: {{ $id }}
+                workloadidentity.azure.livewyer.io/federatedidentitycredential: {{ $id }}
             spec:
               {{- if $spec.providerConfigRef }}
               providerConfigRef: {{ toJson $spec.providerConfigRef }}
@@ -108,7 +97,7 @@ spec:
 
             ---
             {{- range $roleAssign := $spec.forProvider.roleAssignments }}
-            {{- $roleId := printf "%s_%s_%s" $id (replace "/subscriptions/" "" $roleAssign.scope) $roleAssign.roleDefinitionName }}
+            {{- $roleId := printf "%s-%s" $id (lower $roleAssign.roleDefinitionName) }}
             {{- if $roleAssign.permissions }}
             ---
 
@@ -118,11 +107,10 @@ spec:
               name: {{ $roleId }}
               namespace: {{ $ns }}
               annotations:
-                {{ setResourceNameAnnotation (printf "roledefinition.authorization.azure.livewyer.io/%s" $roleId) }}
+                {{ setResourceNameAnnotation (printf "roledefinition.workloadidentity.azure.livewyer.io/%s" $roleId) }}
               labels:
                 azure.livewyer.io/workloadidentity: {{ $id }}
-                authorization.azure.livewyer.io/roledefinition: {{ $roleId }}
-                azure.livewyer.io/subscription: {{ replace "/subscriptions/" "" $roleAssign.scope }}
+                workloadidentity.azure.livewyer.io/roledefinition: {{ $roleId }}
             spec:
               {{- if $spec.providerConfigRef }}
               providerConfigRef: {{ toJson $spec.providerConfigRef }}
@@ -170,11 +158,10 @@ spec:
               name: {{ $roleId }}
               namespace: {{ $ns }}
               annotations:
-                {{ setResourceNameAnnotation (printf "roleassignment.authorization.azure.livewyer.io/%s" $roleId) }}
+                {{ setResourceNameAnnotation (printf "roleassignment.workloadidentity.azure.livewyer.io/%s" $roleId) }}
               labels:
                 azure.livewyer.io/workloadidentity: {{ $id }}
-                authorization.azure.livewyer.io/roleassignment: {{ $roleId }}
-                azure.livewyer.io/subscription: {{ replace "/subscriptions/" "" $roleAssign.scope }}
+                workloadidentity.azure.livewyer.io/roleassignment: {{ $roleId }}
             spec:
               {{- if $spec.providerConfigRef }}
               providerConfigRef: {{ toJson $spec.providerConfigRef }}
@@ -192,9 +179,8 @@ spec:
               writeConnectionSecretsToNamespace: {{ $spec.writeConnectionSecretsToNamespace }}
               {{- end }}
               forProvider:
-                name: {{ $roleAssign.roleDefinitionName }}
                 scope: {{ $roleAssign.scope }}
-                principalId: {{ dig "status" "atProvider" "principalId" "" (getComposedResource . (printf "userassignedidentity.managedidentity.azure.livewyer.io/%s" $id)) }}
+                principalId: {{ dig "resources" (printf "userassignedidentity.workloadidentity.azure.livewyer.io/%s" $id) "resource" "status" "atProvider" "principalId" "" $.observed }}
                 {{- if $roleAssign.description }}
                 description: {{ $roleAssign.description }}
                 {{- end }}
@@ -220,18 +206,31 @@ spec:
             {{- if $spec.forProvider.serviceAccountName }}
             ---
 
-            apiVersion: v1
-            kind: ServiceAccount
+            apiVersion: kubernetes.m.crossplane.io/v1alpha1
+            kind: Object
             metadata:
               name: {{ $spec.forProvider.serviceAccountName }}
               namespace: {{ $ns }}
               annotations:
                 {{ setResourceNameAnnotation (printf "serviceaccount.workloadidentity.azure.livewyer.io/%s" $spec.forProvider.serviceAccountName) }}
-                azure.workload.identity/client-id: {{ default (toString "''") (getComposedResource . (printf "userassignedidentity.managedidentity.azure.livewyer.io/%s" $id)).status.atProvider.clientId }}
-                azure.workload.identity/tenant-id: {{ default (toString "''") (getComposedResource . (printf "userassignedidentity.managedidentity.azure.livewyer.io/%s" $id)).status.atProvider.tenantId }}
-                azure.workload.identity/service-account-token-expiration: {{ default (toString "'86400'") $spec.forProvider.serviceAccountTokenExpiration }}
               labels:
                 azure.livewyer.io/workloadidentity: {{ $id }}
+                workloadidentity.azure.livewyer.io/serviceaccount: {{ $spec.forProvider.serviceAccountName }}
+            spec:
+              forProvider:
+                manifest:
+                  apiVersion: v1
+                  kind: ServiceAccount
+                  metadata:
+                    name: {{ $spec.forProvider.serviceAccountName }}
+                    namespace: {{ $ns }}
+                    annotations:
+                      azure.workload.identity/client-id: {{ default (toString "''") (getComposedResource . (printf "userassignedidentity.workloadidentity.azure.livewyer.io/%s" $id)).status.atProvider.clientId }}
+                      azure.workload.identity/tenant-id: {{ default (toString "''") (getComposedResource . (printf "userassignedidentity.workloadidentity.azure.livewyer.io/%s" $id)).status.atProvider.tenantId }}
+                      azure.workload.identity/service-account-token-expiration: {{ default (toString "'86400'") $spec.forProvider.serviceAccountTokenExpiration }}
+                    labels:
+                      azure.livewyer.io/workloadidentity: {{ $id }}
+                      workloadidentity.azure.livewyer.io/serviceaccount: {{ $spec.forProvider.serviceAccountName }}
 
             ---
             {{- end }}
@@ -240,31 +239,33 @@ spec:
             apiVersion: {{ .observed.composite.resource.apiVersion }}
             kind: {{ .observed.composite.resource.kind }}
             metadata:
+              name: {{ $id }}
+              namespace: {{ $ns }}
               labels:
                 azure.livewyer.io/workloadidentity: {{ $id }}
             status:
               atProvider:
-                location: {{ default "" (getComposedResource . (printf "userassignedidentity.managedidentity.azure.livewyer.io/%s" $id)).status.atProvider.location }}
-                resourceGroupName: {{ default "" (getComposedResource . (printf "userassignedidentity.managedidentity.azure.livewyer.io/%s" $id)).status.atProvider.resourceGroupName }}
-                oidcIssuerURL: {{ default "" (getComposedResource . (printf "federatedidentitycredential.managedidentity.azure.livewyer.io/%s" $id)).status.atProvider.issuer }}
-                clientId: {{ default "" (getComposedResource . (printf "userassignedidentity.managedidentity.azure.livewyer.io/%s" $id)).status.atProvider.clientId }}
-                tenantId: {{ default "" (getComposedResource . (printf "userassignedidentity.managedidentity.azure.livewyer.io/%s" $id)).status.atProvider.tenantId }}
-                principalId: {{ default "" (getComposedResource . (printf "userassignedidentity.managedidentity.azure.livewyer.io/%s" $id)).status.atProvider.principalId }}
+                location: {{ (getComposedResource . (printf "userassignedidentity.workloadidentity.azure.livewyer.io/%s" $id)).status.atProvider.location }}
+                resourceGroupName: {{ (getComposedResource . (printf "userassignedidentity.workloadidentity.azure.livewyer.io/%s" $id)).status.atProvider.resourceGroupName }}
+                oidcIssuerURL: {{ (getComposedResource . (printf "federatedidentitycredential.workloadidentity.azure.livewyer.io/%s" $id)).status.atProvider.issuer }}
+                clientId: {{ (getComposedResource . (printf "userassignedidentity.workloadidentity.azure.livewyer.io/%s" $id)).status.atProvider.clientId }}
+                tenantId: {{ (getComposedResource . (printf "userassignedidentity.workloadidentity.azure.livewyer.io/%s" $id)).status.atProvider.tenantId }}
+                principalId: {{ (getComposedResource . (printf "userassignedidentity.workloadidentity.azure.livewyer.io/%s" $id)).status.atProvider.principalId }}
                 roleAssignments:
                   {{- range $roleAssign := $spec.forProvider.roleAssignments }}
-                  {{- $roleId := printf "%s_%s_%s" $id (replace "/subscriptions/" "" $roleAssign.scope) $roleAssign.roleDefinitionName }}
+                  {{- $roleId := printf "%s-%s" $id (lower $roleAssign.roleDefinitionName) }}
                   {{- if $roleAssign.permissions }}
-                  - scope: {{ default "" (getComposedResource . (printf "roleassignment.authorization.azure.livewyer.io/%s" $roleId)).status.atProvider.scope }}
-                    roleDefinitionId: {{ default "" (getComposedResource . (printf "roledefinition.authorization.azure.livewyer.io/%s" $roleId)).status.atProvider.id }}
-                    roleDefinitionName: {{ default "" (getComposedResource . (printf "roledefinition.authorization.azure.livewyer.io/%s" $roleId)).status.atProvider.name }}
-                    roleAssignmentId: {{ default "" (getComposedResource . (printf "roleassignment.authorization.azure.livewyer.io/%s" $roleId)).status.atProvider.id }}
-                    roleAssignmentName: {{ default "" (getComposedResource . (printf "roleassignment.authorization.azure.livewyer.io/%s" $roleId)).status.atProvider.name }}
-                    permissions: {{ default (list) (getComposedResource . (printf "roledefinition.authorization.azure.livewyer.io/%s" $roleId)).status.atProvider.permissions }}
+                  - scope: {{ dig "resources" (printf "roleassignment.workloadidentity.azure.livewyer.io/%s" $roleId) "resource" "status" "atProvider" "scope" "" $.observed }}
+                    roleDefinitionId: {{ dig "resources" (printf "roledefinition.workloadidentity.azure.livewyer.io/%s" $roleId) "resource" "status" "atProvider" "id" "" $.observed }}
+                    roleDefinitionName: {{ dig "resources" (printf "roledefinition.workloadidentity.azure.livewyer.io/%s" $roleId) "resource" "status" "atProvider" "name" "" $.observed }}
+                    roleAssignmentId: {{ dig "resources" (printf "roleassignment.workloadidentity.azure.livewyer.io/%s" $roleId) "resource" "status" "atProvider" "id" "" $.observed }}
+                    roleAssignmentName: {{ dig "resources" (printf "roleassignment.workloadidentity.azure.livewyer.io/%s" $roleId) "resource" "status" "atProvider" "name" "" $.observed }}
+                    permissions: {{ toJson (dig "resources" (printf "roledefinition.workloadidentity.azure.livewyer.io/%s" $roleId) "resource" "status" "atProvider" "permissions" (list) $.observed) }}
                   {{- else }}
-                  - scope: {{ default "" (getComposedResource . (printf "roleassignment.authorization.azure.livewyer.io/%s" $roleId)).status.atProvider.scope }}
+                  - scope: {{ dig "resources" (printf "roleassignment.workloadidentity.azure.livewyer.io/%s" $roleId) "resource" "status" "atProvider" "scope" "" $.observed }}
                     roleDefinitionName: {{ $roleAssign.roleDefinitionName }}
-                    roleAssignmentId: {{ default "" (getComposedResource . (printf "roleassignment.authorization.azure.livewyer.io/%s" $roleId)).status.atProvider.id }}
-                    roleAssignmentName: {{ default "" (getComposedResource . (printf "roleassignment.authorization.azure.livewyer.io/%s" $roleId)).status.atProvider.name }}
+                    roleAssignmentId: {{ dig "resources" (printf "roleassignment.workloadidentity.azure.livewyer.io/%s" $roleId) "resource" "status" "atProvider" "id" "" $.observed }}
+                    roleAssignmentName: {{ dig "resources" (printf "roleassignment.workloadidentity.azure.livewyer.io/%s" $roleId) "resource" "status" "atProvider" "name" "" $.observed }}
                   {{- end }}
                   {{- end }}
 

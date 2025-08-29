@@ -21,6 +21,7 @@ spec:
         permissions:
           - dataActions:
               - Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read
+            notActions:
               - Microsoft.Network/loadBalancers/read
       - roleDefinitionName: CustomRole2
         scope: /subscriptions/yyyy-yyyy-yyyy
