@@ -51,6 +51,8 @@ spec:
                         properties:
                           description:
                             type: string
+                            description: "Optional description for this
+ role assignment"
                           roleDefinitionName:
                             type: string
                             description: "Name of the Azure built-in role or custom role to assign (e.g., Contributor, Reader)"
@@ -59,68 +61,92 @@ spec:
                             description: "Azure resource ID defining the scope of the role assignment (e.g., subscription, resource group, or specific resource)"
                           scopeRef:
                             type: object
+                            description: "Reference to another Crossplane resource to use as the scope"
                             properties:
                               name:
                                 type: string
+                                description: "Name of the referenced resource for scope"
                               namespace:
                                 type: string
+                                description: "Namespace of the referenced resource for scope"
                               policy:
                                 type: object
+                                description: "Policy for reference resolution"
                                 properties:
                                   resolution:
                                     type: string
+                                    description: "Resolution specifies whether resolution of this reference is required"
                                   resolve:
                                     type: string
+                                    description: "Resolve specifies when this reference should be resolved"
                           assignableScopes:
                             type: string
+                            description: "Azure resource ID defining assignable scopes for custom role definitions"
                           assignableScopesRefs:
                             type: object
+                            description: "Reference to another Crossplane resource for assignable scopes"
                             properties:
                               name:
                                 type: string
+                                description: "Name of the referenced resource for assignable scopes"
                               namespace:
                                 type: string
+                                description: "Namespace of the referenced resource for assignable scopes"
                               policy:
                                 type: object
+                                description: "Policy for reference resolution"
                                 properties:
                                   resolution:
                                     type: string
+                                    description: "Resolution specifies whether resolution of this reference is required"
                                   resolve:
                                     type: string
+                                    description: "Resolve specifies when this reference should be resolved"
                           roleDefinitionId:
                             type: string
+                            description: "Azure role definition ID (alternative to roleDefinitionName)"
                           condition:
                             type: string
+                            description: "Condition expression for conditional role assignment"
                           conditionVersion:
                             type: string
+                            description: "Version of the condition expression syntax"
                           principalType:
                             type: string
+                            description: "Type of principal (e.g., ServicePrincipal, User, Group)"
                           permissions:
-                            type: object
-                            description: "List of data actions to include in the custom role (only used when createCustomRole is true)"
-                            properties:
-                              actions:
-                                type: array
-                                items:
-                                  type: string
-                              dataActions:
-                                type: array
-                                items:
-                                  type: string
-                              noActions:
-                                type: array
-                                items:
-                                  type: string
-                              noDataActions:
-                                type: array
-                                items:
-                                  type: string
+                            type: array
+                            description: "List of permissions to include in the custom role (only used when creating custom roles)"
+                            items:
+                              type: object
+                              properties:
+                                actions:
+                                  type: array
+                                  description: "List of allowed management operations"
+                                  items:
+                                    type: string
+                                dataActions:
+                                  type: array
+                                  description: "List of allowed data operations"
+                                  items:
+                                    type: string
+                                noActions:
+                                  type: array
+                                  description: "List of denied management operations"
+                                  items:
+                                    type: string
+                                noDataActions:
+                                  type: array
+                                  description: "List of denied data operations"
+                                  items:
+                                    type: string
                     serviceAccountName:
                       type: string
                       description: "Kubernetes Service Account name to create"
                     serviceAccountTokenExpiration:
                       type: integer
                       minimum: 0
+                      description: "Service account token expiration time in seconds"
                     tags:
                       type: object
                       description: "Azure resource tags to apply to the created resources"

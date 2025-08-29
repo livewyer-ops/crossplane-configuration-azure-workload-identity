@@ -6,9 +6,6 @@ metadata:
   annotations:
     crossplane.io/composition-resource-name: workloadidentity.azure.livewyer.io/simple-example
 spec:
-  providerConfigRef:
-    kind: ProviderConfig
-    name: azure
   forProvider:
     location: eastus
     resourceGroupName: example-group
@@ -22,15 +19,15 @@ spec:
       - roleDefinitionName: CustomRole1
         scope: /subscriptions/xxxx-xxxx-xxxx
         permissions:
-          dataActions:
-            - Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read
-            - Microsoft.Network/loadBalancers/read
+          - dataActions:
+              - Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read
+              - Microsoft.Network/loadBalancers/read
       - roleDefinitionName: CustomRole2
         scope: /subscriptions/yyyy-yyyy-yyyy
         permissions:
-          actions:
-            - Microsoft.Network/applicationGateways/read
-            - Microsoft.Network/networkSecurityGroups/read
+          - actions:
+              - Microsoft.Network/applicationGateways/read
+              - Microsoft.Network/networkSecurityGroups/read
     tags:
       name: simple-example
       env: test
