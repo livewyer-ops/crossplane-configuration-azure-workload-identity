@@ -96,8 +96,8 @@ spec:
                 subject: {{ printf "system:serviceaccount:%s:%s" $ns $id }}
 
             ---
-            {{- range $roleAssign := $spec.forProvider.roleAssignments }}
-            {{- $roleId := printf "%s-%s" $id (lower $roleAssign.roleDefinitionName) }}
+            {{- range $i, $roleAssign := $spec.forProvider.roleAssignments }}
+            {{- $roleId := printf "%s-role-%d-%s" $id $i (lower $roleAssign.roleDefinitionName) }}
             {{- if $roleAssign.permissions }}
             ---
 
@@ -252,8 +252,8 @@ spec:
                 tenantId: {{ (getComposedResource . (printf "userassignedidentity.workloadidentity.azure.livewyer.io/%s" $id)).status.atProvider.tenantId }}
                 principalId: {{ (getComposedResource . (printf "userassignedidentity.workloadidentity.azure.livewyer.io/%s" $id)).status.atProvider.principalId }}
                 roleAssignments:
-                  {{- range $roleAssign := $spec.forProvider.roleAssignments }}
-                  {{- $roleId := printf "%s-%s" $id (lower $roleAssign.roleDefinitionName) }}
+                  {{- range $i, $roleAssign := $spec.forProvider.roleAssignments }}
+                  {{- $roleId := printf "%s-role-%d-%s" $id $i (lower $roleAssign.roleDefinitionName) }}
                   {{- if $roleAssign.permissions }}
                   - scope: {{ dig "resources" (printf "roleassignment.workloadidentity.azure.livewyer.io/%s" $roleId) "resource" "status" "atProvider" "scope" "" $.observed }}
                     roleDefinitionId: {{ dig "resources" (printf "roledefinition.workloadidentity.azure.livewyer.io/%s" $roleId) "resource" "status" "atProvider" "id" "" $.observed }}
