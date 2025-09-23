@@ -97,7 +97,7 @@ spec:
 
             ---
             {{- range $i, $roleAssign := $spec.forProvider.roleAssignments }}
-            {{- $roleId := printf "%s-role-%d-%s" $id $i (lower $roleAssign.roleDefinitionName) }}
+            {{- $roleId := printf "%s-role-%d-%s" $id $i (lower $roleAssign.roleDefinitionName | kebabcase) }}
             {{- if $roleAssign.permissions }}
             ---
 

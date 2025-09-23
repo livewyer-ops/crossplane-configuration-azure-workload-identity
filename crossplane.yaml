@@ -449,6 +449,6 @@ spec:
     - provider: xpkg.upbound.io/upbound/provider-kubernetes
       version: ">=v1"
     - function: xpkg.upbound.io/upbound/function-go-templating
-      version: ">=v0.10.0"
+      version: ">=v0.11.0"
     - function: xpkg.upbound.io/upbound/function-auto-ready
       version: ">=v0.5.0"
