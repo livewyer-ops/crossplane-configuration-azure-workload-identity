@@ -5,6 +5,9 @@ metadata:
   namespace: test
   annotations:
     crossplane.io/composition-resource-name: workloadidentity.azure.livewyer.io/simple-example
+    test-annotation: "true"
+  labels:
+    test-label: "true"
 spec:
   forProvider:
     location: eastus

@@ -17,9 +17,11 @@ spec:
         source: Inline
         inline:
           template: |
-            {{ $id := .observed.composite.resource.metadata.name -}}
-            {{ $ns := default "default" $.observed.composite.resource.metadata.namespace }}
-            {{ $spec := .observed.composite.resource.spec -}}
+            {{- $id := $.observed.composite.resource.metadata.name }}
+            {{- $ns := default "default" $.observed.composite.resource.metadata.namespace }}
+            {{- $annotations := default (dict) $.observed.composite.resource.metadata.annotations }}
+            {{- $labels := default (dict) $.observed.composite.resource.metadata.labels }}
+            {{- $spec := $.observed.composite.resource.spec }}
 
             ---
 
@@ -30,9 +32,15 @@ spec:
               namespace: {{ $ns }}
               annotations:
                 {{ setResourceNameAnnotation (printf "userassignedidentity.workloadidentity.azure.livewyer.io/%s" $id) }}
+                {{- range $key, $value := $annotations }}
+                {{ $key }}: "{{ $value }}"
+                {{- end }}
               labels:
                 azure.livewyer.io/workloadidentity: {{ $id }}
                 workloadidentity.azure.livewyer.io/userassignedidentity: {{ $id }}
+                {{- range $key, $value := $labels }}
+                {{ $key }}: "{{ $value }}"
+                {{- end }}
             spec:
               {{- if $spec.providerConfigRef }}
               providerConfigRef: {{ toJson $spec.providerConfigRef }}
@@ -66,9 +74,15 @@ spec:
               namespace: {{ $ns }}
               annotations:
                 {{ setResourceNameAnnotation (printf "federatedidentitycredential.workloadidentity.azure.livewyer.io/%s" $id) }}
+                {{- range $key, $value := $annotations }}
+                {{ $key }}: "{{ $value }}"
+                {{- end }}
               labels:
                 azure.livewyer.io/workloadidentity: {{ $id }}
                 workloadidentity.azure.livewyer.io/federatedidentitycredential: {{ $id }}
+                {{- range $key, $value := $labels }}
+                {{ $key }}: "{{ $value }}"
+                {{- end }}
             spec:
               {{- if $spec.providerConfigRef }}
               providerConfigRef: {{ toJson $spec.providerConfigRef }}
@@ -93,7 +107,7 @@ spec:
                 parentIdRef:
                   name: {{ $id }}
                   namespace: {{ $ns }}
-                subject: {{ printf "system:serviceaccount:%s:%s" $ns $id }}
+                subject: {{ printf "system:serviceaccount:%s:%s" $ns $spec.forProvider.serviceAccountName }}
 
             ---
             {{- range $i, $roleAssign := $spec.forProvider.roleAssignments }}
@@ -108,9 +122,15 @@ spec:
               namespace: {{ $ns }}
               annotations:
                 {{ setResourceNameAnnotation (printf "roledefinition.workloadidentity.azure.livewyer.io/%s" $roleId) }}
+                {{- range $key, $value := $annotations }}
+                {{ $key }}: "{{ $value }}"
+                {{- end }}
               labels:
                 azure.livewyer.io/workloadidentity: {{ $id }}
                 workloadidentity.azure.livewyer.io/roledefinition: {{ $roleId }}
+                {{- range $key, $value := $labels }}
+                {{ $key }}: "{{ $value }}"
+                {{- end }}
             spec:
               {{- if $spec.providerConfigRef }}
               providerConfigRef: {{ toJson $spec.providerConfigRef }}
@@ -159,9 +179,15 @@ spec:
               namespace: {{ $ns }}
               annotations:
                 {{ setResourceNameAnnotation (printf "roleassignment.workloadidentity.azure.livewyer.io/%s" $roleId) }}
+                {{- range $key, $value := $annotations }}
+                {{ $key }}: "{{ $value }}"
+                {{- end }}
               labels:
                 azure.livewyer.io/workloadidentity: {{ $id }}
                 workloadidentity.azure.livewyer.io/roleassignment: {{ $roleId }}
+                {{- range $key, $value := $labels }}
+                {{ $key }}: "{{ $value }}"
+                {{- end }}
             spec:
               {{- if $spec.providerConfigRef }}
               providerConfigRef: {{ toJson $spec.providerConfigRef }}
@@ -213,9 +239,16 @@ spec:
               namespace: {{ $ns }}
               annotations:
                 {{ setResourceNameAnnotation (printf "serviceaccount.workloadidentity.azure.livewyer.io/%s" $spec.forProvider.serviceAccountName) }}
+                {{- range $key, $value := $annotations }}
+                {{ $key }}: "{{ $value }}"
+                {{- end }}
               labels:
                 azure.livewyer.io/workloadidentity: {{ $id }}
                 workloadidentity.azure.livewyer.io/serviceaccount: {{ $spec.forProvider.serviceAccountName }}
+                azure.workload.identity/use: "true"
+                {{- range $key, $value := $labels }}
+                {{ $key }}: "{{ $value }}"
+                {{- end }}
             spec:
               forProvider:
                 manifest:
@@ -228,9 +261,16 @@ spec:
                       azure.workload.identity/client-id: {{ default (toString "''") (getComposedResource . (printf "userassignedidentity.workloadidentity.azure.livewyer.io/%s" $id)).status.atProvider.clientId }}
                       azure.workload.identity/tenant-id: {{ default (toString "''") (getComposedResource . (printf "userassignedidentity.workloadidentity.azure.livewyer.io/%s" $id)).status.atProvider.tenantId }}
                       azure.workload.identity/service-account-token-expiration: {{ default (toString "'86400'") $spec.forProvider.serviceAccountTokenExpiration }}
+                      {{- range $key, $value := $annotations }}
+                      {{ $key }}: "{{ $value }}"
+                      {{- end }}
                     labels:
                       azure.livewyer.io/workloadidentity: {{ $id }}
                       workloadidentity.azure.livewyer.io/serviceaccount: {{ $spec.forProvider.serviceAccountName }}
+                      azure.workload.identity/use: "true"
+                      {{- range $key, $value := $labels }}
+                      {{ $key }}: "{{ $value }}"
+                      {{- end }}
 
             ---
             {{- end }}
